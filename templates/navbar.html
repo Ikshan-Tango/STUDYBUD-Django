@@ -1,0 +1,17 @@
+<a href="/">
+    <h1>LOGO</h1>
+</a>
+
+<form method="GET" action="{% url 'home' %}">
+    <!-- we dont really need to add a csrf token here because its just a search bar -->
+    <input type="text" placeholder="Search Rooms ..." name="q"/>
+</form>
+{% if request.user.is_authenticated %} 
+<p>Hi {{ request.user }}</p>
+<a href="{% url 'logout' %}">LOGOUT</a>
+{% else %}
+
+<a href="{% url 'login' %}">LOGIN</a>
+{% endif %}
+
+<hr>  
