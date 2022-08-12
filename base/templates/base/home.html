@@ -5,7 +5,7 @@
 <style>
     .home-container{
         display: grid;
-        grid-template-columns: 1fr 3fr; /*we have created 2 columuns which take 1 fraction and 3 fraction of the screen */
+        grid-template-columns: 1fr 3fr 1fr; /*we have created 3 columuns which take 1 fraction and 3 fraction of the screen */
     }
 </style>
 
@@ -43,6 +43,26 @@
             </div>
             {% endfor %}
         </div>
+
+
     </div>
+
+    <div>
+        <h3>Recent Activity</h3>
+        <hr>
+        {% for message in room_messages %}
+            <div>
+                <small>@{{message.user}}  {{message.created|timesince}} ago</small>
+                <small>Replied to "{{message.room}}"</small>
+
+                <p>{{message}}</p><!--  here we wrote only message instead of message.body so that the whole message is not displayed and only the first 50 characters are returned as in message model, it returns self.body [0:50] -->
+                
+                {% if request.user == message.user %}
+                    <a href="{% url 'delete-message' message.id %}">Delete</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
 </div>
 {% endblock content %}

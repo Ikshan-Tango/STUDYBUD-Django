@@ -1,4 +1,5 @@
 from cmath import log
+from email import message
 from multiprocessing import context
 from pickle import FALSE
 from django.shortcuts import render, redirect
@@ -9,7 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse
-from .models import Room, Topic
+from .models import Room, Topic, Message
 from .forms import RoomForm
 
 # rooms=[
@@ -83,7 +84,10 @@ def home(request):
 
     room_count = rooms.count()
 
-    context={'rooms':rooms, 'topics':topics, 'room_count':room_count}
+    #for making the activity feed :-
+    room_messages = Message.objects.all() #loads all the messages that have been present in the message model
+
+    context={'rooms':rooms, 'topics':topics, 'room_count':room_count,'room_messages':room_messages}
     return render(request,'base/home.html',context)
 
 def room(request, pk):
@@ -94,7 +98,20 @@ def room(request, pk):
     #         room=i
 
     room=Room.objects.get(id=pk)
-    context={'room':room}
+    room_messages= room.message_set.all() #message_set.all() loads all the messages from the MESSAGE model which are only linked with the particular room id, remember that in this case message is all lowercase whereas model was Message, used in many to many relationships
+    participants = room.participants.all() #
+
+    if request.method == 'POST':#this is for the comment that a participant can add
+        message = Message.objects.create( #this is a unique method and we are using it for the firs time, using this method we can get message from the user and send it to our model as well while setting its other attributes like user and room to which the message belongs to
+            user = request.user,
+            room = room,
+            body = request.POST.get('body')#it  will recieve the messgage that was entered in the message box
+        )
+
+        room.participants.add(request.user) #this line will add the participant to the model 
+        return redirect('room',pk=room.id)
+
+    context={'room':room,'room_messages':room_messages, 'participants':participants}
     return render(request,'base/room.html',context)
 
 
@@ -139,3 +156,17 @@ def deleteRoom(request,pk):
 
     context={'obj':room}
     return render(request,'base/delete.html',context)
+
+
+@login_required(login_url='login') 
+def deleteMessage(request,pk):
+    message = Message.objects.get(id=pk) #load that data from the model which has the id=pk 
+    if request.user != message.user:
+        return HttpResponse("You're not allowed here!!")
+    if request.method == 'POST':
+        message.delete()
+        return redirect('home')
+
+    context={'obj':message}
+    return render(request,'base/delete.html',context)
+
