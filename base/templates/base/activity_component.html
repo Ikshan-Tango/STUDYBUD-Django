@@ -1,0 +1,15 @@
+<h3>Recent Activity</h3>
+<hr />
+{% for message in room_messages %}
+<div>
+  <small><a href="{% url 'user-profile' message.user.id %}">@{{message.user}}</a> {{message.created|timesince}} ago</small>
+  <small>Replied to "{{message.room}}"</small>
+
+  <p>{{message}}</p>
+  <!--  here we wrote only message instead of message.body so that the whole message is not displayed and only the first 50 characters are returned as in message model, it returns self.body [0:50] -->
+
+  {% if request.user == message.user %}
+  <a href="{% url 'delete-message' message.id %}">Delete</a>
+  {% endif %}
+</div>
+{% endfor %}

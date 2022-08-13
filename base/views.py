@@ -75,18 +75,18 @@ def home(request):
     #making the dynamic search bar 
     q=request.GET.get('q') if request.GET.get('q')!= None else '' #this line is respoonsible to get the room name based on the query that is searched ..... and .filter() function loads the data only what is specified in its arguments
     # by using Q we are implementing a dynamic search engine which can search for messages, specific room and topic name as well
-    #if i remove this if and else statement or use it afterwards then it will give and error
+    #if i remove this if and else statement or use it afterwards then it will give an error
     rooms=Room.objects.filter(Q(topic__name__icontains=q) |
     Q(name__icontains=q) |
     Q(description__icontains=q) 
     ) 
+
     topics = Topic.objects.all() #loading all the topics in this topic variable 
 
     room_count = rooms.count()
 
     #for making the activity feed :-
-    room_messages = Message.objects.all() #loads all the messages that have been present in the message model
-
+    room_messages = Message.objects.filter(Q(room__topic__name__icontains=q)) #when a room is selected from the left side then the activity feed will show recent acitivity only of that particular room and not of all rooms, in Messages model there is room , then in Room model there is topic then in Topic model there is name, thats how we query the topic name from the Message models
     context={'rooms':rooms, 'topics':topics, 'room_count':room_count,'room_messages':room_messages}
     return render(request,'base/home.html',context)
 
@@ -114,6 +114,16 @@ def room(request, pk):
     context={'room':room,'room_messages':room_messages, 'participants':participants}
     return render(request,'base/room.html',context)
 
+def userProfile(request, pk):
+    user = User.objects.get(id = pk)
+
+    rooms = user.room_set.all() #remember we can get all the children of a specific object by doing the model name and then underscore set and then whatever we want there so in this case we're getting all of them, in this case parent is the user and children are the rooms that are linked with the particular user
+
+    room_messages = user.message_set.all()
+    
+    topics = Topic.objects.all()
+    context = {'user':user, 'rooms':rooms, 'topics':topics,'room_messages':room_messages}
+    return render(request,'base/profile.html',context)
 
 @login_required(login_url='login') 
 def createRoom(request): #this view add the room/ text with details of the form added to main page
