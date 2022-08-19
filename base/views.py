@@ -132,7 +132,9 @@ def createRoom(request): #this view add the room/ text with details of the form 
     if request.method == 'POST':
         form = RoomForm(request.POST)#this takes the recent data that we have added in the room
         if form.is_valid():
-            form.save()# this saves the data that was just entered into the form
+            room = form.save(commit= False)# this loads the data in a buffer region before actually saving it  as we use commit = false
+            room.host = request.user  #we are making request.user the room host as he is the one who is creating the form
+            room.save()
             return redirect('home')
 
     context = {'form': form}
