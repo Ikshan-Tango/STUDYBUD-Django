@@ -128,16 +128,27 @@ def userProfile(request, pk):
 @login_required(login_url='login') 
 def createRoom(request): #this view add the room/ text with details of the form added to main page
     form = RoomForm
+    topics = Topic.objects.all()
 
     if request.method == 'POST':
-        form = RoomForm(request.POST)#this takes the recent data that we have added in the room
-        if form.is_valid():
-            room = form.save(commit= False)# this loads the data in a buffer region before actually saving it  as we use commit = false
-            room.host = request.user  #we are making request.user the room host as he is the one who is creating the form
-            room.save()
-            return redirect('home')
+        topic_name = request.POST.get('topic')
+        topic , created = Topic.objects.get_or_create(name = topic_name) #in the arguments there is name = topic_name, left side name is of the model Topic and right side is the html class name of the attribute
+        Room.objects.create( # this must be pretty understandable on its own, WE are creaTING all the objects for the room model
+            host = request.user,
+            topic = topic, #LEFT TOPIC is of the room model , RIGHT TOPIC is the topic which was created up above
+            name = request.POST.get('name'),
+            description = request.POST.get('description')
+        )
 
-    context = {'form': form}
+        return redirect('home')
+        # form = RoomForm(request.POST)#this takes the recent data that we have added in the room
+        # if form.is_valid():
+        #     room = form.save(commit= False)# this loads the data in a buffer region before actually saving it  as we use commit = false
+        #     room.host = request.user  #we are making request.user the room host as he is the one who is creating the form
+        #     room.save()
+        #     return redirect('home')
+
+    context = {'form': form, 'topics':topics}
     return render(request,'base/room_form.html',context)
 
 @login_required(login_url='login') 
@@ -145,16 +156,28 @@ def updateRoom(request, pk):
     room = Room.objects.get(id=pk)
     form = RoomForm(instance=room) # this form will be filled with the values of the room we click so that we can edit it
 
+    topics = Topic.objects.all()
+    
     if request.user != room.host: #if the user who's logged in, is not the room host/ the owner of the room, then he should not be able to edit or delete others owners rooms so for handling that we are using this
         return HttpResponse("You're not allowed here!!")
 
     if request.method == 'POST':
-        form = RoomForm(request.POST, instance=room)
-        if form.is_valid():
-            form.save()
-            return redirect('home')
+        topic_name = request.POST.get('topic')
+        topic , created = Topic.objects.get_or_create(name = topic_name)
 
-    context={'form':form}
+        room.name = request.POST.get('name')
+        room.topic = topic
+        room.description = request.POST.get('description')
+        room.save()
+        return redirect('home')
+
+        
+        # form = RoomForm(request.POST, instance=room)
+        # if form.is_valid():
+        #     form.save()
+        #     return redirect('home')
+
+    context={'form':form,'topics':topics, 'room':room}
     return render(request, 'base/room_form.html',context)
 
 @login_required(login_url='login') 
