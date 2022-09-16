@@ -1,0 +1,14 @@
+{% extends 'main.html' %} 
+<!-- this template will be rendered for both deleting a message as well as a room  -->
+
+{% block content %}
+<div>
+    <form method="POST" action="">
+        {% csrf_token %}
+        <p>Are you sure you want to delete "{{obj}}"</p>
+        <a href="{{request.META.HTTP_REFERER}}">Go Back</a> <!-- by the help of this button, the user will go back to the previous page it was initially on -->
+        <input type="submit" value="Confirm"/>
+    </form>
+</div>
+
+{% endblock content %}
