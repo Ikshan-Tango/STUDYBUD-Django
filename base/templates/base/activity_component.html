@@ -1,7 +1,9 @@
 <div class="activities">
-  <div class="activities__header">
-    <h2>Recent Activities</h2>
-  </div>
+  <a href="{% url 'activities' %}">
+    <div class="activities__header">
+      <h2>Recent Activities</h2>
+    </div>
+  </a>
   {% for message in room_messages %}
   <div class="activities__box">
     

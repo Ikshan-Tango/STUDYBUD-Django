@@ -81,7 +81,7 @@ def home(request):
     Q(description__icontains=q) 
     ) 
 
-    topics = Topic.objects.all() #loading all the topics in this topic variable 
+    topics = Topic.objects.all()[0:5] #loading all the topics in this topic variable and [0:5] means that it will only load the first 5 topics and that's how we can limit
 
     room_count = rooms.count()
 
@@ -221,4 +221,19 @@ def updateUser(request):
     return render(request, 'base/update-user.html',context)
 
 
-    
+def topicsPage(request):
+    q=request.GET.get('q') if request.GET.get('q')!= None else '' 
+    topics=Topic.objects.filter(name__icontains=q) 
+
+    #topics = Topic.objects.all() #loading all the topics in this topic variable 
+
+    topics_count = topics.count()
+
+    context={'topics':topics, 'topics_count':topics_count}
+    return render(request,'base/topics.html',context)
+
+def activityPage(request):
+
+    room_messages=Message.objects.all()
+    context={'room_messages':room_messages}
+    return render(request,'base/activity.html',context)
